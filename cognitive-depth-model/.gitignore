@@ -1,0 +1,55 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# --- Entornos virtuales ---
+venv/
+env/
+.env
+
+# --- Datos (no versionar datasets grandes) ---
+data/raw/
+data/processed/
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.tiff
+
+# --- Modelos entrenados ---
+*.pth
+*.pt
+*.ckpt
+*.h5
+checkpoints/
+
+# --- Logs ---
+logs/
+runs/
+*.log
+tensorboard_logs/
+
+# --- Notebooks checkpoints ---
+.ipynb_checkpoints/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Resultados temporales ---
+results/metrics/*.csv
+results/visualizations/*.png
+results/grad_cam/*.png

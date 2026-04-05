@@ -1,0 +1,154 @@
+# ============================================
+# Configuración del Modelo Cognitivo Artificial
+# Tesis Doctoral: Jesús Goenaga Peña
+# ============================================
+# Este archivo centraliza todos los hiperparámetros
+# del modelo para garantizar reproducibilidad.
+# ============================================
+
+# --- Semilla para reproducibilidad ---
+seed: 42
+
+# --- Configuración de entrada ---
+input:
+  image_height: 375          # Resolución KITTI
+  image_width: 1242          # Resolución KITTI
+  resize_height: 256         # Resolución de trabajo
+  resize_width: 512          # Resolución de trabajo
+  channels: 3                # RGB
+  stereo: true               # Entrada binocular (izq + der)
+
+# --- Configuración de preprocesamiento (Fases 1-6) ---
+preprocessing:
+  # Fase 1: Ingreso de luz (normalización)
+  normalize_range: [0.0, 1.0]
+  histogram_equalization: true
+  gaussian_blur_kernel: 3
+  gaussian_blur_sigma: 0.5
+
+  # Fase 2: Refracción (enfoque óptico)
+  optical_gaussian_kernel: 5
+  optical_gaussian_sigma: 1.0
+  laplacian_kernel: 3
+
+  # Fase 3: Proyección retiniana
+  fovea_radius_ratio: 0.3    # Radio de la fóvea como proporción de la imagen
+  periphery_downsample: 4    # Factor de reducción en periferia
+
+  # Fase 4: Transformación en impulsos
+  ganglion_nonlinearity: "sigmoid"
+  lateral_inhibition_kernel: 5
+
+  # Fase 5-6: Quiasma óptico y cintillas
+  nasal_temporal_split: 0.5  # Proporción de división nasal/temporal
+
+# --- Arquitectura del modelo (Fases 7-27) ---
+architecture:
+  backbone: "resnet"
+  resnet_variant: 50            # ResNet-50 como base
+  pretrained: false             # Sin pesos preentrenados (aprendizaje autónomo)
+  activation: "leaky_relu"      # Función de activación principal
+  leaky_relu_slope: 0.01
+
+  # Conexiones residuales
+  residual_connections: true
+
+  # Retroalimentación entre fases
+  feedback_connections: true
+  feedback_weight_init: 0.1     # Peso inicial de conexiones feedback
+
+  # Batch normalization
+  batch_norm: true
+
+  # Dropout para regularización
+  dropout_rate: 0.3
+
+  # Capa de integración
+  integration_method: "concatenation"  # concatenation | attention | weighted_sum
+  integration_dense_units: 512
+
+  # Capa de salida
+  output_activation: "sigmoid"
+  output_units: 1               # Clasificación binaria
+
+# --- Configuración de entrenamiento ---
+training:
+  # Datasets
+  kitti_train_size: 280
+  kitti_test_size: 120
+  kitti_val_size: 100
+  illusion_train_size: 300
+  illusion_test_size: 100
+  illusion_val_size: 100
+
+  # Hiperparámetros de entrenamiento
+  batch_size: 16
+  max_epochs: 200
+  learning_rate: 0.001
+
+  # Optimizador
+  optimizer: "adam"
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+  weight_decay: 1.0e-4
+
+  # Scheduler de learning rate
+  scheduler: "reduce_on_plateau"
+  scheduler_patience: 10
+  scheduler_factor: 0.5
+  min_learning_rate: 1.0e-7
+
+  # Early stopping
+  early_stopping: true
+  early_stopping_patience: 20
+  early_stopping_min_delta: 0.001
+
+  # Función de pérdida
+  loss_function: "binary_crossentropy"
+  auxiliary_loss: "adl"          # Absolute Disparity Loss
+  auxiliary_loss_weight: 0.3
+
+  # Entrenamiento en dos etapas
+  stage1_frozen_layers: "phases_1_to_15"  # Congelar fases bajas
+  stage1_epochs: 50
+  stage2_finetune_lr: 0.0001              # LR reducido para fine-tuning
+
+  # Inicialización de pesos
+  weight_init: "he_normal"
+
+  # Data augmentation
+  augmentation:
+    horizontal_flip: false       # NO flip horizontal (rompe estereoscopía)
+    brightness_jitter: 0.1
+    contrast_jitter: 0.1
+    gaussian_noise_std: 0.01
+
+# --- Configuración de evaluación ---
+evaluation:
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+    - auc_roc
+    - mse
+    - mae
+    - r_squared
+  
+  # Explicabilidad
+  grad_cam_layers:
+    - "phase_7_ngl"
+    - "phase_12_v1_layers_ii_iii"
+    - "phase_19_v3a_disparity"
+    - "phase_27_v5mt_dynamic_maps"
+
+  # Ejecuciones para validación (3 "participantes artificiales")
+  num_runs: 3
+
+# --- Configuración de hardware ---
+hardware:
+  device: "auto"               # auto | cpu | cuda
+  num_workers: 2
+  pin_memory: true
+  mixed_precision: true        # FP16 para eficiencia en GPU
