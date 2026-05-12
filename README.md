@@ -129,11 +129,15 @@ pip install -r requirements.txt
 | Métrica | KITTI | Ilusiones |
 |---|---|---|
 | **Modelo v2** | 100.0% | 0.0% |
-| **Humanos (pilotos)** | 95.8–97.9% | 100.0% |
+| **Humanos (N=3)** | 98.9% | 94.7% |
 
-- El modelo replica exitosamente el procesamiento estereoscópico (KITTI) pero no los mecanismos monoculares que los humanos emplean ante estímulos ambiguos (ilusiones).
+### Hallazgos clave
+
+- **H1-1 (apoyo parcial):** El modelo supera significativamente el azar en KITTI (100%, p<.001) pero no en ilusiones (0%). Los tres participantes humanos superan el azar en ambos datasets (95.3–99.5%, p<.001). Todos los resultados sobreviven corrección de Bonferroni.
+- **Interacción tipo_tarea × agente:** Efecto masivo (Pseudo-R² = 0.94). El modelo y los humanos convergen en KITTI (|Δ| < 0.03) y divergen completamente en ilusiones (|Δ| > 0.93).
+- **Correspondencia funcional:** Correlación de perfiles de precisión r = 0.878 (p = 0.004), indicando que el patrón de dificultad por condición es similar entre agentes.
+- **Condición de frontera:** χ²(1) = 507.03, V de Cramér = 0.948. El modelo carece de señal estereoscópica en las ilusiones y recurre a heurísticas de textura que contradicen la percepción humana.
 - Las activaciones Grad-CAM siguen la jerarquía V2 → V3 → V5/MT, consistente con la literatura neurocientífica (Yamins & DiCarlo, 2016).
-- El modelo muestra un sesgo de proximidad coherente con la prioridad evolutiva de detección de objetos cercanos.
 
 ## Licencia
 
